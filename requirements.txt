@@ -1,0 +1,6 @@
+pandas
+scikit-learn
+streamlit
+plotly
+SQLAlchemy>=2.0
+PyMySQL>=1.1
