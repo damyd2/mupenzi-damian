@@ -1,0 +1,40 @@
+name: Validate Streamlit app
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Configure local smoke-test login
+        run: |
+          printf '[auth]\nusername = "admin"\npassword = "ci-only-password"\n' > .streamlit/secrets.toml
+
+      - name: Check Python syntax
+        run: python -m compileall -q app.py
+
+      - name: Smoke-test dashboard login
+        run: |
+          python -c "from streamlit.testing.v1 import AppTest; app = AppTest.from_file('app.py').run(timeout=60); app.text_input[0].set_value('admin'); app.text_input[1].set_value('ci-only-password'); app.button[0].click().run(timeout=60); assert not app.exception, [str(error.value) for error in app.exception]; assert app.session_state['dashboard_authenticated']"
