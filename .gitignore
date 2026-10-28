@@ -1,1 +1,7 @@
 .streamlit/secrets.toml
+logs/
+__pycache__/
+*.py[cod]
+data/
+*.zip
+*.joblib
