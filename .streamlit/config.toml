@@ -1,0 +1,48 @@
+[server]
+address = "127.0.0.1"
+maxUploadSize = 500
+maxMessageSize = 500
+
+[theme]
+base = "dark"
+primaryColor = "#00D4FF"
+backgroundColor = "#0B1020"
+secondaryBackgroundColor = "#151D33"
+textColor = "#F2F6FF"
+borderColor = "#2C3B5A"
+showWidgetBorder = true
+baseRadius = "12px"
+buttonRadius = "10px"
+font = "sans-serif"
+chartCategoricalColors = ["#00D4FF", "#FF4D8D", "#A78BFA", "#34D399", "#FFB454", "#60A5FA", "#F87171"]
+chartSequentialColors = ["#081B2C", "#0B3550", "#0B5270", "#08718A", "#0791A3", "#12B4B5", "#39D0BF", "#72E4C5", "#B0F0D8", "#E0FFF1"]
+chartDivergingColors = ["#6B1639", "#A3204B", "#D43D5D", "#EA7480", "#F3B1A8", "#B9D7F5", "#78B7EF", "#428DE0", "#2362B5", "#153B7A"]
+dataframeBorderColor = "#2C3B5A"
+dataframeHeaderBackgroundColor = "#151D33"
+dataframeHeaderTextColor = "#F2F6FF"
+
+[theme.light]
+primaryColor = "#007F9E"
+backgroundColor = "#F5F8FC"
+secondaryBackgroundColor = "#E8EEF7"
+textColor = "#142033"
+borderColor = "#D2DCEB"
+chartCategoricalColors = ["#007F9E", "#D52B68", "#7046C5", "#138A5B", "#B86B00", "#2868C7", "#C73C3C"]
+chartSequentialColors = ["#EFFBFD", "#D6F4F7", "#B5E8EF", "#8AD5E2", "#58BBD0", "#329CB8", "#217A9B", "#1B5D7D", "#164360", "#102B42"]
+chartDivergingColors = ["#8D1E45", "#B42A52", "#D84B62", "#E98188", "#F2B8B1", "#B9D7F5", "#80B6EA", "#4B91D5", "#2B68B2", "#1A447D"]
+dataframeBorderColor = "#D2DCEB"
+dataframeHeaderBackgroundColor = "#E8EEF7"
+dataframeHeaderTextColor = "#142033"
+
+[theme.dark]
+primaryColor = "#00D4FF"
+backgroundColor = "#0B1020"
+secondaryBackgroundColor = "#151D33"
+textColor = "#F2F6FF"
+borderColor = "#2C3B5A"
+chartCategoricalColors = ["#00D4FF", "#FF4D8D", "#A78BFA", "#34D399", "#FFB454", "#60A5FA", "#F87171"]
+chartSequentialColors = ["#081B2C", "#0B3550", "#0B5270", "#08718A", "#0791A3", "#12B4B5", "#39D0BF", "#72E4C5", "#B0F0D8", "#E0FFF1"]
+chartDivergingColors = ["#6B1639", "#A3204B", "#D43D5D", "#EA7480", "#F3B1A8", "#B9D7F5", "#78B7EF", "#428DE0", "#2362B5", "#153B7A"]
+dataframeBorderColor = "#2C3B5A"
+dataframeHeaderBackgroundColor = "#151D33"
+dataframeHeaderTextColor = "#F2F6FF"
