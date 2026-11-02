@@ -1,184 +1,136 @@
-# Fake News Text Analyzer
 
-Project branding: **PhD student Mupenzi Damian**. The app displays an
-original project logo and a 2026 copyright/author credit in the sidebar.
 
-A Streamlit research demo that trains and compares seven classifier
-configurations on a labeled LIAR-format or compatible dataset: Logistic Regression, Multinomial
-Naive Bayes, Complement Naive Bayes, a log-loss SGD Classifier, a
-word/character Linear SVM, and a dual-view model combining word and character
-TF-IDF text features with available non-identifying LIAR context metadata
-(subject, party, context, job, and credibility counts). Speaker/publisher
-identity is excluded from model features to reduce source-label leakage. A
-seventh model implements a dual-view GCN: word/character text and context
-metadata are encoded separately, projected to at most 64 dimensions, and each
-view gets its own five-neighbor cosine feature graph. Graph convolution is
-followed by learned attention fusion; supervised contrastive loss regularizes
-the fused training representations alongside class-weighted cross-entropy.
-Validation/test examples connect only to training nodes. Their labels are
-never used to construct either graph. This is a local implementation of that
-architecture, not a reproduction of the listed external SOTA methods or an
-independently validated publication result. A
-stratified validation split selects the default model; where enough distinct
-publishers or speakers exist, those groups are kept separate between
-validation/test and training. A separate holdout split reports accuracy, macro-precision,
-macro-recall, macro-F1, and micro-F1. Small datasets that cannot support the
-splits are explicitly flagged because their selection estimate is less
-reliable.
-In the current 10,269-row LIAR run, the dual-view GCN reached 0.421 validation
-Macro-F1, 44.8% holdout accuracy, and 44.5% holdout Macro-F1. This is one
-fixed grouped split, not a repeated-run estimate or publication-ready evidence.
-The **Research benchmarks** view keeps unreported architectural ablations
-marked as not reported and separates them from the locally measured results in
-Overview.
+# LIAR2 Benchmark
 
-The trained model can screen headlines fetched from Africa Intelligence,
-Al Jazeera, Voice of America, IGIHE, New Vision, and BBC News. Headline estimates
-are based on text alone and are not fact-checks or evidence that a source is
-unreliable. Only bounded headline lists are fetched; article bodies are not
-downloaded.
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/an-enhanced-fake-news-detection-system-with/fact-checking-on-liar2)](https://paperswithcode.com/sota/fact-checking-on-liar2?p=an-enhanced-fake-news-detection-system-with)
 
-Newly scraped headlines have no verified training labels. Their model estimates
-are used only for source-contribution analysis and predictions, never as
-ground-truth labels for fitting or evaluating models.
-The metadata-aware alternative is a lightweight TF-IDF baseline inspired by
-the two-view approach in the supplied research text. The dual-view GCN is an
-experimental feature-graph model using learned attention and supervised
-contrastive training. It is not a dense SBERT implementation or a faithful
-reproduction of external SOTA methods. Scraped headlines have no verified
-context metadata, so predictions use text only; publisher identity is not fed
-to the classifier. For manual predictions, optional context metadata can be
-entered one line per statement.
+The [LIAR](https://doi.org/10.18653/v1/P17-2067) dataset has been widely followed by fake news detection researchers since its release, and along with a great deal of research, the community has provided a variety of feedback on the dataset to improve it. We adopted these feedbacks and released the LIAR2 dataset, a new benchmark dataset of ~23k manually labeled by professional fact-checkers for fake news detection tasks. We have used a split ratio of 8:1:1 to distinguish between the training set, the test set, and the validation set, details of which are provided in the paper of "[An Enhanced Fake News Detection System With Fuzzy Deep Learning](https://doi.org/10.1109/ACCESS.2024.3418340)". The LIAR2 dataset can be accessed at [`./liar2`](./liar2) and [Huggingface](https://huggingface.co/datasets/chengxuphd/liar2), and statistical information for LIAR and LIAR2 is provided in the table below: 
 
-The analysis dashboard keeps the labeled training dataset and scraped headline
-contributions separate. It includes model comparison, overview/evaluation
-metrics, source and label breakdowns, interactive filters, and a publisher
-relationship graph. The
-**Text processing** view previews the exact analyzer tokens, sparse TF-IDF
-features, and an example model estimate for a selected dataset row. It
-documents TF-IDF rather than suggesting the app creates dense embeddings.
-**Dataset analysis** reports the
-loaded dataset's actual sample and class counts plus the trained TF-IDF
-vocabulary size. Publisher metadata is used for graph relationships, not as a
-model input; the app does not load the 384-dimensional SBERT/Meta embeddings
-listed in some proposed dataset specifications. A separate reference table
-shows the comparison figures supplied for 3Sources, Citeseer, GRAZ02, MNIST,
-NGS, Out-Scene, NoisyMNIST, and LIAR (Ours); those figures are explicitly
-marked as unverified reference values.
-The **Predictions** view accepts up to 100 newline-separated statements and
-shows each model estimate with per-category scores. Scores describe the
-classifier output, not the factual probability that a claim is true.
-Scraped headline estimate charts use distinct colors: pink for False, amber
-for Suspicious, and green for True.
-An always-visible color key also identifies online articles in cyan; labeled
-dataset charts and graph nodes use the same category colors.
-The relationship graph exposes a Nodes table with stable node IDs and an Edges
-table mapping connected IDs to their shared-publisher relationship. Edges
-connect records from the same publisher only; they do not imply shared claims.
 
-## Run locally
+| **Statistics**                               | **LIAR** | **LIAR2** |
+|----------------------------------------------|----------|------------|
+| Training set size                            | 10,269   | 18,369     |
+| Validation set size                          | 1,284    | 2,297      |
+| Testing set size                             | 1,283    | 2,296      |
+| Avg. statement length (tokens)               | 17.9     | 17.7       |
+| Avg. speaker description length (tokens)     | \        | 39.4       |
+| Avg. justification length (tokens)           | \        | 94.4       |
+| **Labels**
+| Pants on fire                                | 1,050    | 3,031      |
+| False                                        | 2,511    | 6,605      |
+| Barely-true                                  | 2,108    | 3,603      |
+| Half-true                                    | 2,638    | 3,709      |
+| Mostly-true                                  | 2,466    | 3,429      |
+| True                                         | 2,063    | 2,585      |
 
-Install the dependencies and start the app:
 
-```powershell
-python -m pip install -r requirements.txt
-python -m streamlit run app.py
+## Segmentation Experiments
+We conducted a total of five groups of experiments and the results are presented in the following table. To make the comparison easy, we split the LIAR2 dataset into two parts: $LIAR2 = LIAR + NEW$. LIAR refers to the original LIAR dataset after we enhance the structure, and NEW denotes the data that we expand on the original LIAR dataset, i.e., the incremental part.
+
+Performance metrics for experiments on the split LIAR2 dataset. Numbers in parentheses indicate the proportion of the segment that is split. Original in the first line means the unmodified official version of the LIAR dataset, while without original it is the LIAR dataset that has been structured by our enhancement. The mix marking in the last line means that the LIAR and NEW parts are all mixed together before splitting, i.e., experiments on the full LIAR2 dataset. All results were obtained by using the FDHN model, as the FDHN model has been validated to achieve current state-of-the-art performance on the LIAR dataset, and experimental code and records on FDHN on the LIAR dataset are provided in the [`chengxuphd/FDHN`](https://github.com/chengxuphd/FDHN). All source code and records related to this comparison experiment can be accessed under [`./segmentation_experiments`](./segmentation_experiments).
+
+
+| **Train**              | **Test & Val.**       | **Val. Accuracy** | **Val. F1-Macro** | **Val. F1-Micro** | **Test Accuracy** | **Test F1-Macro** | **Test F1-Micro** | **Mean** |
+|------------------------|------------------------|--------------------------|-------------------------|-------------------------|-------------------|------------------|------------------|----------|
+| LIAR (Original .8)      | LIAR (Original .2)     | 0.4673                   | 0.4490                  | 0.4577                  | 0.4649            | 0.4701           | 0.4649           | 0.4623   |
+| LIAR (.8)               | LIAR (.2)              | 0.6140                   | 0.5888                  | 0.5833                  | 0.6084            | 0.6138           | 0.6084           | 0.6028   |
+| NEW (.8)                | NEW (.2)               | 0.7676                   | 0.6706                  | 0.7473                  | 0.7592            | 0.6952           | 0.7592           | 0.7332   |
+| LIAR (1.)               | NEW (1.)               | 0.7361                   | 0.6963                  | 0.7301                  | 0.7361            | 0.7057           | 0.7361           | 0.7234   |
+| NEW (1.)                | LIAR (1.)              | 0.5575                   | 0.5203                  | 0.5199                  | 0.5575            | 0.5626           | 0.5575           | 0.5459   |
+| LIAR (1.) + NEW (.557)  | NEW (.443)             | 0.7867                   | 0.7249                  | 0.7696                  | 0.7827            | 0.7389           | 0.7827           | 0.7643   |
+| LIAR (.635) + NEW (1.) | LIAR (.365)             | 0.6308                   | 0.6118                  | 0.6073                  | 0.6211            | 0.6270           | 0.6211           | 0.6199   |
+| LIAR (.8) + NEW (.8)    | LIAR (.2) + NEW (.2)   | 0.6977                   | 0.6671                  | 0.6771                  | 0.6892            | 0.6828           | 0.6892           | 0.6839   |
+| LIAR + NEW (Mix .8)     | LIAR + NEW (Mix .2)    | 0.6974                   | 0.6570                  | 0.6676                  | 0.7021            | 0.6961           | 0.7021           | 0.6871   |
+
+
+## Ablation Experiment
+
+The LIAR2 dataset is an upgrade of the LIAR dataset, which inherits the ideas of the LIAR dataset, refines the details and architecture, and expands the size of the dataset to make it more responsive to the needs of fake news detection tasks. We believe that with the help of the LIAR2 dataset, it will be able to perform better fake news detection tasks. The analysis and baseline information about the LIAR2 dataset is provided in below. All source code and records related to this ablation experiment can be accessed under [`./ablation_experiments`](./ablation_experiments).
+
+| **Feature**              | **Val. Accuracy** | **Val. F1-Macro** | **Val. F1-Micro** | **Test Accuracy** | **Test F1-Macro** | **Test F1-Micro** | **Mean** |
+|--------------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|----------|
+| Statement              | 0.3174       | 0.1957       | 0.3117       | 0.3197       | 0.2380       | 0.3197       | 0.2837 |
+| Date                   | 0.2912       | 0.1879       | 0.2912       | 0.3079       | 0.1775       | 0.3079       | 0.2606 |
+| Subject                | 0.3243       | 0.2311       | 0.3183       | 0.3267       | 0.2271       | 0.3267       | 0.2924 |
+| Speaker                | 0.3283       | 0.2250       | 0.3174       | 0.3310       | 0.2462       | 0.3310       | 0.2965 |
+| Speaker Description    | 0.3322       | 0.2444       | 0.3250       | 0.3280       | 0.2444       | 0.3280       | 0.3003 |
+| State Info             | 0.2930       | 0.1577       | 0.2950       | 0.2979       | 0.1521       | 0.2979       | 0.2489 |
+| Credibility History    | 0.5007       | 0.4696       | 0.4985       | 0.5057       | 0.4656       | 0.5057       | 0.4910 |
+| Context                | 0.2982       | 0.1817       | 0.2982       | 0.3132       | 0.1791       | 0.3132       | 0.2639 |
+| Justification          | **0.5964**   | **0.5657**   | **0.5827**   | **0.6115**   | **0.5968**   | **0.6115**   | **0.5941** |
+| All without 
+|Statement               | **0.7079**   | **0.6734**   | **0.6822**   | **0.7182**   | **0.7108**   | **0.7182**   | **0.7018** |
+| Date                   | 0.6931       | 0.6572       | 0.6680       | 0.7078       | 0.6993       | 0.7078       | 0.6889 |
+| Subject                | 0.7000       | 0.6579       | 0.6681       | 0.7078       | 0.7013       | 0.7078       | 0.6905 |
+| Speaker                | 0.6944       | 0.6648       | 0.6757       | 0.7043       | 0.6942       | 0.7043       | 0.6896 |
+| Speaker Description    | 0.6892       | 0.6640       | 0.6739       | 0.7169       | 0.7073       | 0.7169       | 0.6947 |
+| State Info             | 0.7074       | 0.6625       | 0.6729       | 0.7099       | 0.7016       | 0.7099       | 0.6940 |
+| Credibility History    | 0.6025       | 0.5717       | 0.5900       | 0.6185       | 0.6046       | 0.6185       | 0.6010 |
+| Context                | 0.7005       | 0.6622       | 0.6720       | 0.7043       | 0.6967       | 0.7043       | 0.6900 |
+| Justification          | 0.5285       | 0.4898       | 0.5153       | 0.5340       | 0.5148       | 0.5340       | 0.5194 |
+| Statement +
+| Date                   | 0.3431       | 0.2540       | 0.3343       | 0.3380       | 0.2514       | 0.3380       | 0.3098 |
+| Subject                | 0.3548       | 0.2759       | 0.3513       | 0.3375       | 0.2580       | 0.3375       | 0.3192 |
+| Speaker                | 0.3618       | 0.2862       | 0.3539       | 0.3476       | 0.2640       | 0.3476       | 0.3269 |
+| Speaker Description    | 0.3583       | 0.2814       | 0.3531       | 0.3667       | 0.2886       | 0.3667       | 0.3358 |
+| State Info             | 0.3317       | 0.2367       | 0.3294       | 0.3328       | 0.2362       | 0.3328       | 0.2999 |
+| Credibility History    | 0.5067       | 0.4737       | 0.5084       | 0.5244       | 0.5000       | 0.5244       | 0.5063 |
+| Context                | 0.3361       | 0.2682       | 0.3391       | 0.3458       | 0.2560       | 0.3458       | 0.3152 |
+| Justification          | 0.6017       | 0.5578       | 0.5796       | 0.6176       | 0.6026       | 0.6176       | 0.5962 |
+| All                    | **0.6974**   | **0.6570**   | **0.6676**   | **0.7021**   | **0.6961**   | **0.7021**   | **0.6871**|
+
+## Example Usage
+
+You can load each of the subset as follows:
+
+```python
+import datasets
+dataset = "chengxuphd/liar2"
+dataset = datasets.load_dataset(dataset)
+statement_train, y_train = dataset["train"]["statement"], dataset["train"]["label"]
+statement_val, y_val = dataset["validation"]["statement"], dataset["validation"]["label"]
+statement_test, y_test = dataset["test"]["statement"], dataset["test"]["label"]
 ```
 
-## Training dataset
+## Google Colab analysis
 
-The app accepts a LIAR ZIP archive and loads its `train.tsv` split, or you can
-upload a TSV, CSV, or TXT dataset. Locally, it automatically uses
-`Desktop/PHD new version/PHD new project/liar_dataset-master.zip` when present
-and no `data/train.tsv` exists. The archive's README identifies this as the
-original LIAR dataset and says it is for research use; it does not identify it
-as LIAR-2. Keep the dataset archive out of the public app repository.
+Open [`LIAR2_Colab_Analysis.ipynb`](./LIAR2_Colab_Analysis.ipynb) in Google Colab (upload the notebook with **File > Upload notebook**). It loads the LIAR2 dataset from Hugging Face and includes exploratory analysis of the splits, labels, statement lengths, and subjects. It analyzes the labeled LIAR2 claims only and does not include a new-articles feed.
 
-## XAMPP MySQL connection
+## Citation
 
-Start **MySQL** in the XAMPP Control Panel. The app uses a dedicated MySQL
-account configured in `[connections.mysql]` in `.streamlit/secrets.toml`; use
-`.streamlit/secrets.toml.example` as a template. Keep the private file out of
-source control. That account should have only `SELECT` and `INSERT` access to the
-`fake_news_modeling.model_predictions` and
-`fake_news_modeling.dataset_source_authors` tables. The sidebar checks the
-live connection and shows saved record counts; use **Refresh XAMPP MySQL
-status** to update them immediately. The database can be viewed in phpMyAdmin
-at `http://localhost/phpmyadmin/`.
+If you find our work useful in your research, please consider citing:
 
-Manual prediction results are not saved automatically.
-After generating predictions, explicitly consent and select **Save current
-predictions to XAMPP MySQL** to store each statement, predicted category,
-model score, per-class scores, model name, and UTC timestamp. Scraped headlines
-are not saved by this feature. Restrict database access appropriately because
-saved statements may contain sensitive information.
 
-The **Dataset analysis** view separately offers an explicit-consent action to
-store loaded labeled dataset rows in `dataset_source_authors`. Records include
-the dataset name, source record ID when available, author/speaker, publisher,
-label, statement text, available context metadata, and import timestamp.
-Repeated saves skip identical rows. Scraped headlines and model-generated
-labels are not stored by this dataset action.
-
-For a deployed app, configure a MySQL host reachable from the deployment
-environment; `127.0.0.1` refers to the app's own machine, not your local XAMPP
-installation. Do not expose a database publicly without appropriate network
-restrictions and credentials.
-
-## Local dashboard login and exports
-
-The local dashboard requires the `[auth]` username and password from the
-private `.streamlit/secrets.toml` file. The configured username is `admin`;
-the generated password is stored only in that local private file. Keep it out
-of source control and do not share it.
-The Streamlit server binds to `127.0.0.1` in `.streamlit/config.toml` and is
-intended for local access. Do not expose this simple app-level login to a
-public or shared network; configure a dedicated identity provider and
-deployment-grade authentication first.
-Once signed in, expand **Change dashboard password** in the sidebar. Enter the
-current password and a matching new password of at least 14 characters. The
-new password is written to the ignored local secrets file and applies to
-future sign-ins.
-
-After training, the **Overview** tab can prepare a ZIP export containing the
-loaded dataset, local model-comparison metrics, interactive HTML graphs, and
-serialized fitted models. If headlines have been fetched, their records and
-model estimates are included separately. The graphs load Plotly.js from a
-CDN. Joblib model files are trusted-code artifacts; only load them from a
-source you trust.
-
-## Application logs
-
-The app writes timestamped errors and tracebacks to `logs/app.log`, rotating
-the log at 2 MB and keeping up to three backups. While signed in, expand
-**Application logs** in the sidebar to inspect recent entries. User statement
-text and passwords are not intentionally written to the log. Error messages
-are also shown in the app when an operation fails. The `logs/` directory is
-ignored by Git.
-
-## Deploy
-
-This project is published in
-[`damyd2/mupenzi-damian`](https://github.com/damyd2/mupenzi-damian). In
-Streamlit Community Cloud, choose that repository, the `main` branch, and
-`app.py` as the app entry point.
-
-Before deploying, add these values under the app's **Settings > Secrets**.
-Choose a strong dashboard password and set the MySQL connection to a hosted
-server reachable from Streamlit Community Cloud:
-
-```toml
-[auth]
-username = "admin"
-password = "replace-with-a-strong-random-password"
-
-[connections.mysql]
-host = "your-reachable-mysql-host"
-port = 3306
-username = "your-app-user"
-password = "your-app-password"
-database = "fake_news_modeling"
+```bibtex
+@article{xu2024enhanced,
+  author={Xu, Cheng and Kechadi, M-Tahar},
+  journal={IEEE Access}, 
+  title={An Enhanced Fake News Detection System With Fuzzy Deep Learning}, 
+  year={2024},
+  volume={12},
+  number={},
+  pages={88006-88021},
+  keywords={Fake news;Fuzzy logic;Benchmark testing;Social networking (online);Deep learning;Task analysis;Natural language processing;Classification algorithms;Deep learning;fuzzy deep learning;fake news;fake news detection;fact-checking;NLP;classification systems;benchmark},
+  url={https://doi.org/10.1109/ACCESS.2024.3418340},
+  doi={10.1109/ACCESS.2024.3418340}}
 ```
 
-The local XAMPP server at `127.0.0.1` cannot be reached from Streamlit
-Community Cloud. Do not copy local credentials into a public repository.
+
+```bibtex
+@inproceedings{xu2023fuzzy,
+   author = {Xu, Cheng and Kechadi, M-Tahar},
+   title = {Fuzzy Deep Hybrid Network for Fake News Detection},
+   year = {2023},
+   isbn = {9798400708916},
+   publisher = {Association for Computing Machinery},
+   address = {New York, NY, USA},
+   url = {https://doi.org/10.1145/3628797.3628971},
+   doi = {10.1145/3628797.3628971},
+   booktitle = {Proceedings of the 12th International Symposium on Information and Communication Technology},
+   pages = {118–125},
+   numpages = {8},
+   keywords = {Classification Systems, Deep Learning, Hybrid Learning Models, Fuzzy Deep Learning, Fake News Detection},
+   location = {<conf-loc>, <city>Ho Chi Minh</city>, <country>Vietnam</country>, </conf-loc>},
+   series = {SOICT '23}
+}
+```
